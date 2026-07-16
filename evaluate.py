@@ -1,21 +1,13 @@
 import torch
 import numpy as np
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, roc_auc_score
-import matplotlib.pyplot as plt
-import seaborn as sns
+import pandas as pd
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 from preprocess import get_preprocessed_data
 from graph_builder import create_pyg_data
-from model import GATClassifier
+from model import HybridClassifier
 
-def evaluate_model(model_path="saved_models/gat_model.pth"):
+def evaluate_models():
     print("Loading data...")
-    # Fix the random seed if you want consistent train/test masks across runs
-    # But for a simple script, we'll just evaluate on whatever mask is generated,
-    # or ideally we'd save the mask. Since we don't save the mask, we'll evaluate 
-    # on the whole graph just to see overall performance, or a random split.
-    # To keep it rigorous, we'll set a fixed seed before create_pyg_data so it matches train.py
-    # if train.py was run with the same seed. Let's just evaluate on the whole graph for simplicity in this phase,
-    # or use the generated test_mask (which will be a random 20% each run).
     torch.manual_seed(42)
     np.random.seed(42)
     
@@ -24,40 +16,82 @@ def evaluate_model(model_path="saved_models/gat_model.pth"):
     
     in_channels = X.shape[1]
     
-    print("Loading model...")
-    model = GATClassifier(in_channels=in_channels)
-    model.load_state_dict(torch.load(model_path))
-    model.eval()
+    modes = ['gat', 'rdbn', 'hybrid']
+    paths = {
+        'gat': 'saved_models/gat_only.pth',
+        'rdbn': 'saved_models/rdbn_only.pth',
+        'hybrid': 'saved_models/hybrid.pth'
+    }
     
-    print("Running evaluation on test mask...")
-    with torch.no_grad():
-        out = model(data.x, data.edge_index)
-        probs = torch.softmax(out, dim=1)[:, 1].numpy() # probability of class 1
-        preds = out.argmax(dim=1).numpy()
-        
-        y_true = data.y.numpy()
-        
-        # Evaluate only on test mask
-        test_mask = data.test_mask.numpy()
-        y_true_test = y_true[test_mask]
-        preds_test = preds[test_mask]
-        probs_test = probs[test_mask]
-        
-        acc = accuracy_score(y_true_test, preds_test)
-        prec = precision_score(y_true_test, preds_test)
-        rec = recall_score(y_true_test, preds_test)
-        f1 = f1_score(y_true_test, preds_test)
-        roc_auc = roc_auc_score(y_true_test, probs_test)
-        cm = confusion_matrix(y_true_test, preds_test)
-        
-        print("\n--- Evaluation Metrics (Test Set) ---")
-        print(f"Accuracy:  {acc:.4f}")
-        print(f"Precision: {prec:.4f}")
-        print(f"Recall:    {rec:.4f}")
-        print(f"F1-score:  {f1:.4f}")
-        print(f"ROC-AUC:   {roc_auc:.4f}")
-        print("\nConfusion Matrix:")
-        print(cm)
+    results = []
+    
+    for mode in modes:
+        model_path = paths[mode]
+        print(f"\n--- Evaluating {mode.upper()} ---")
+        try:
+            model = HybridClassifier(in_channels=in_channels, mode=mode)
+            model.load_state_dict(torch.load(model_path))
+            model.eval()
+        except FileNotFoundError:
+            print(f"Model file {model_path} not found. Skipping...")
+            continue
+            
+        with torch.no_grad():
+            if mode in ['gat', 'hybrid']:
+                out, explain = model(data.x, data.edge_index, return_explainability=True)
+            else:
+                out, explain = model(data.x, return_explainability=True)
+                
+            probs = torch.softmax(out, dim=1)[:, 1].numpy()
+            preds = out.argmax(dim=1).numpy()
+            
+            y_true = data.y.numpy()
+            test_mask = data.test_mask.numpy()
+            
+            y_true_test = y_true[test_mask]
+            preds_test = preds[test_mask]
+            probs_test = probs[test_mask]
+            
+            acc = accuracy_score(y_true_test, preds_test)
+            prec = precision_score(y_true_test, preds_test, zero_division=0)
+            rec = recall_score(y_true_test, preds_test, zero_division=0)
+            f1 = f1_score(y_true_test, preds_test, zero_division=0)
+            roc_auc = roc_auc_score(y_true_test, probs_test)
+            
+            results.append({
+                'Model': mode.upper(),
+                'Accuracy': acc,
+                'Precision': prec,
+                'Recall': rec,
+                'F1-Score': f1,
+                'ROC-AUC': roc_auc
+            })
+            
+            # Print Explainability for Hybrid
+            if mode == 'hybrid':
+                print("\n[Explainability Analysis - Hybrid]")
+                # 1. Attention (just check shapes)
+                att = explain.get('attention')
+                if att:
+                    print("GAT Attention extracted successfully.")
+                    # att is tuple (att1, att2). att1 is (edge_index, edge_attr)
+                    edges, weights = att[0]
+                    print(f"Layer 1 Max Attention Weight: {weights.max().item():.4f}")
+                
+                # 2. RDBN Contributions
+                contribs = explain.get('rdbn_contributions')
+                if contribs:
+                    print("RDBN Residual Path Contributions:")
+                    for c in contribs:
+                        print(f"  Layer {c['layer']}: Residual Norm = {c['residual_norm']:.4f}, New Transform Norm = {c['new_norm']:.4f}")
+                    # Find which path contributed most
+                    max_residual_layer = max(contribs, key=lambda x: x['residual_norm'])['layer']
+                    print(f"-> Residual connection at Layer {max_residual_layer} contributed the most information.")
+
+    if results:
+        print("\n=== ABLATION STUDY RESULTS ===")
+        df_results = pd.DataFrame(results)
+        print(df_results.to_string(index=False))
 
 if __name__ == "__main__":
-    evaluate_model()
+    evaluate_models()
