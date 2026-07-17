@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabetes Risk Assessment — GAT+RDBN</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="glass-panel">
+            <div class="header-content">
+                <div>
+                    <h1>Diabetes Risk Assessment <span class="badge">GAT & RDBN</span></h1>
+                    <p class="subtitle">Dataset: Early-Stage Diabetes Risk  &middot; model v1.2</p>
+                </div>
+                <div class="status">
+                    <span class="status-indicator"></span> Model loaded
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <section class="top-section">
+                <!-- Patient Input Form -->
+                <div class="glass-panel panel-input">
+                    <h2>Patient Input</h2>
+                    <form id="prediction-form">
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label for="age">Age: <span id="age-val">45</span></label>
+                                <input type="range" id="age" name="Age" min="1" max="100" value="45">
+                            </div>
+                            <div class="input-group">
+                                <label for="gender">Gender</label>
+                                <select id="gender" name="Gender">
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="checkbox-grid">
+                            <label class="checkbox-container"><input type="checkbox" name="Polyuria"> <span>Polyuria</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="Polydipsia"> <span>Polydipsia</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="sudden weight loss"> <span>Sudden weight loss</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="weakness"> <span>Weakness</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="Polyphagia"> <span>Polyphagia</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="Genital thrush"> <span>Genital thrush</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="visual blurring"> <span>Visual blurring</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="Itching"> <span>Itching</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="Irritability"> <span>Irritability</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="delayed healing"> <span>Delayed healing</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="partial paresis"> <span>Partial paresis</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="muscle stiffness"> <span>Muscle stiffness</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="Alopecia"> <span>Alopecia</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="Obesity"> <span>Obesity</span></label>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary" id="run-btn">
+                            <span class="btn-text">Run Diagnosis</span>
+                            <div class="spinner hidden" id="loading-spinner"></div>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Prediction & Explainability -->
+                <div class="glass-panel panel-prediction">
+                    <h2>Prediction</h2>
+                    
+                    <div class="prediction-result" id="prediction-result-box">
+                        <div class="prediction-header">
+                            <h3 id="pred-class">--</h3>
+                            <span id="pred-conf" class="confidence-text">--% confidence</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="pred-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="neighbors-section">
+                        <h3>Similar Patients (Graph Neighbors)</h3>
+                        <div class="neighbors-list" id="neighbors-list">
+                            <p class="placeholder-text">Run diagnosis to see similar patients</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+
+            <!-- Review Area -->
+            <section class="bottom-section">
+                <div class="glass-panel panel-review">
+                    <h2>Model Performance — For Review</h2>
+                    
+                    <div class="metrics-cards" id="metrics-cards">
+                        <!-- Populated dynamically -->
+                        <div class="loading-metrics">Loading metrics...</div>
+                    </div>
+
+                    <div class="review-grid">
+                        <div class="review-card">
+                            <h3>Confusion Matrix</h3>
+                            <p class="subtitle-small">Raw counts on Test Set</p>
+                            <div class="cm-grid" id="cm-grid">
+                                <div>TN: <span id="cm-tn">-</span></div>
+                                <div>FP: <span id="cm-fp">-</span></div>
+                                <div>FN: <span id="cm-fn">-</span></div>
+                                <div>TP: <span id="cm-tp">-</span></div>
+                            </div>
+                        </div>
+
+                        <div class="review-card" style="grid-column: 1 / -1;">
+                            <h3>Model Performance Comparison</h3>
+                            
+                            <div id="best-model-banner" class="best-model-banner hidden">
+                                <div class="trophy-icon"></div>
+                                <div class="best-model-text">
+                                    <strong id="best-model-name">--</strong> achieved the highest overall performance with 
+                                    <span class="highlight">Accuracy: <span id="best-model-acc">--</span>%</span> and 
+                                    <span class="highlight">F1-Score: <span id="best-model-f1">--</span>%</span>
+                                </div>
+                            </div>
+
+                            <table class="ablation-table">
+                                <thead>
+                                    <tr>
+                                        <th>Model</th>
+                                        <th>Accuracy</th>
+                                        <th>F1-Score</th>
+                                        <th>ROC-AUC</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ablation-body">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

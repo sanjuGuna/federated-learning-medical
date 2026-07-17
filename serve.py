@@ -1,9 +1,19 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from predict import predict_new_patient
-
+from evaluate import get_evaluation_metrics
+import os
 app = FastAPI(title="GAT+RDBN Diabetes Prediction API")
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 class PatientData(BaseModel):
     Age: float
     Gender: str
@@ -46,6 +56,14 @@ def predict(patient: PatientData):
     
     result = predict_new_patient(mapped_dict)
     return result
+
+@app.get("/metrics")
+def metrics():
+    return get_evaluation_metrics()
+
+if not os.path.exists("frontend"):
+    os.makedirs("frontend")
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
 
 if __name__ == "__main__":
     import uvicorn

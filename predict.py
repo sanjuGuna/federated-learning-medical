@@ -61,6 +61,7 @@ def predict_new_patient(patient_data_dict, model_path="saved_models/hybrid.pth",
         confidence = float(new_patient_prob[pred_class] * 100)
         
         # Process explainability
+        neighbor_importance = {}
         feature_importance = {}
         att = explain.get('attention')
         if att:
@@ -75,8 +76,25 @@ def predict_new_patient(patient_data_dict, model_path="saved_models/hybrid.pth",
             dest_nodes = edge_idx[1, mask]
             weights = edge_weights[mask]
             
+            feature_names = df_orig.columns.drop("class").tolist()
+            feature_imp_scores = np.zeros(len(feature_names))
+            
             for dest, w in zip(dest_nodes, weights):
-                feature_importance[f"Neighbor_{dest}"] = float(w[0])
+                neighbor_importance[f"Neighbor_{dest}"] = float(w[0])
+                # Calculate feature-level importance: attention weight * similarity (1 - absolute difference)
+                for f_idx in range(len(feature_names)):
+                    # Similarity is higher when diff is smaller
+                    # Note: Features are already encoded/normalized between 0 and 1 generally
+                    diff = abs(X_new[0, f_idx] - X_combined[dest, f_idx])
+                    similarity = 1.0 - diff
+                    feature_imp_scores[f_idx] += w[0] * similarity
+                    
+            # Normalize feature importance
+            if len(dest_nodes) > 0:
+                feature_imp_scores = feature_imp_scores / np.sum(weights)
+                
+            for f_idx, name in enumerate(feature_names):
+                feature_importance[name] = float(feature_imp_scores[f_idx])
                 
         layer_contributions = []
         contribs = explain.get('rdbn_contributions')
@@ -92,6 +110,7 @@ def predict_new_patient(patient_data_dict, model_path="saved_models/hybrid.pth",
             "prediction": pred_label,
             "confidence": confidence,
             "neighbor_ids": neighbors,
+            "neighbor_importance": neighbor_importance,
             "feature_importance": feature_importance,
             "per_layer_contribution": layer_contributions
         }
