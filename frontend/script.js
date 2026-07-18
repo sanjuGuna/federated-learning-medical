@@ -191,16 +191,6 @@ async function fetchMetrics() {
             }
         }
 
-        // Populate Confusion Matrix
-        if (data.confusion_matrix) {
-            // cm format: [[TN, FP], [FN, TP]]
-            const cm = data.confusion_matrix;
-            document.getElementById('cm-tn').textContent = cm[0][0];
-            document.getElementById('cm-fp').textContent = cm[0][1];
-            document.getElementById('cm-fn').textContent = cm[1][0];
-            document.getElementById('cm-tp').textContent = cm[1][1];
-        }
-
     } catch (e) {
         console.error("Failed to fetch metrics", e);
         document.getElementById('metrics-cards').innerHTML = '<div class="placeholder-text">Failed to load metrics. Ensure backend models are trained.</div>';

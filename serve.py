@@ -34,7 +34,7 @@ class PatientData(BaseModel):
 
 @app.post("/predict")
 def predict(patient: PatientData):
-    data_dict = patient.dict()
+    data_dict = patient.model_dump()
     mapped_dict = {
         "Age": data_dict["Age"],
         "Gender": data_dict["Gender"],
