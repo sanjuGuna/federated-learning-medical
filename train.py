@@ -3,9 +3,23 @@ import torch.nn as nn
 import torch.optim as optim
 import os
 import numpy as np
-from preprocess import get_preprocessed_data
+import argparse
+
 from graph_builder import create_pyg_data
 from model import HybridClassifier
+
+def get_data_for_dataset(dataset_name):
+    if dataset_name == 'diabetes':
+        from preprocess import get_preprocessed_data
+        return get_preprocessed_data()
+    elif dataset_name == 'hcv':
+        from hcv_preprocess import get_preprocessed_data
+        return get_preprocessed_data()
+    elif dataset_name == 'dermatology':
+        from dermatology_preprocess import get_preprocessed_data
+        return get_preprocessed_data()
+    else:
+        raise ValueError(f"Unknown dataset: {dataset_name}")
 
 def pretrain_rdbn(model, data, epochs=50, lr=0.01):
     print("Pretraining RDBN layers...")
@@ -30,21 +44,26 @@ def pretrain_rdbn(model, data, epochs=50, lr=0.01):
         with torch.no_grad():
             current_input = layer(current_input)
             
-def train_model(mode='hybrid', epochs=100, pretrain_epochs=50, save_path="saved_models/gat_model.pth"):
+def train_model(dataset_name='diabetes', mode='hybrid', epochs=100, pretrain_epochs=50, save_path=None):
+    if save_path is None:
+        save_path = f"saved_models/{dataset_name}/{mode}.pth"
+
     # Set seeds for reproducible masks
     torch.manual_seed(42)
     np.random.seed(42)
 
-    print(f"\n--- Training {mode.upper()} Model ---")
+    print(f"\n--- Training {mode.upper()} Model on {dataset_name.upper()} Dataset ---")
     print("Loading and preprocessing data...")
-    X, y, scaler, feature_names = get_preprocessed_data()
+    X, y, scaler, feature_names = get_data_for_dataset(dataset_name)
     
     print("Building k-NN graph and converting to PyTorch Geometric data...")
     data = create_pyg_data(X, y, k=5)
     
     in_channels = X.shape[1]
+    num_classes = len(np.unique(y))
+    print(f"Detected {num_classes} classes.")
     
-    model = HybridClassifier(in_channels=in_channels, mode=mode)
+    model = HybridClassifier(in_channels=in_channels, num_classes=num_classes, mode=mode)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.005, weight_decay=5e-4)
     
@@ -79,6 +98,10 @@ def train_model(mode='hybrid', epochs=100, pretrain_epochs=50, save_path="saved_
     print(f"Model saved to {save_path}")
 
 if __name__ == "__main__":
-    train_model('gat', save_path="saved_models/gat_only.pth")
-    train_model('rdbn', save_path="saved_models/rdbn_only.pth")
-    train_model('hybrid', save_path="saved_models/hybrid.pth")
+    parser = argparse.ArgumentParser(description='Train Models')
+    parser.add_argument('--dataset', type=str, default='diabetes', choices=['diabetes', 'hcv', 'dermatology'], help='Dataset to train on')
+    args = parser.parse_args()
+    
+    train_model(dataset_name=args.dataset, mode='gat')
+    train_model(dataset_name=args.dataset, mode='rdbn')
+    train_model(dataset_name=args.dataset, mode='hybrid')

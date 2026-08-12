@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diabetes Risk Assessment — GAT+RDBN</title>
+    <title>GAT+RDBN Multi-Dataset Diagnostic System</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
     <div class="app-container">
         <header class="glass-panel">
             <div class="header-content">
                 <div>
-                    <h1>Diabetes Risk Assessment <span class="badge">GAT & RDBN</span></h1>
-                    <p class="subtitle">Dataset: Early-Stage Diabetes Risk  &middot; model v1.2</p>
+                    <h1>Medical Diagnosis System <span class="badge">GAT & RDBN</span></h1>
+                    <p class="subtitle">Multi-Dataset Classification &middot; model v2.0</p>
                 </div>
                 <div class="status">
-                    <span class="status-indicator"></span> Model loaded
+                    <span class="status-indicator"></span> System Online
                 </div>
             </div>
         </header>
@@ -27,37 +27,137 @@
             <section class="top-section">
                 <!-- Patient Input Form -->
                 <div class="glass-panel panel-input">
-                    <h2>Patient Input</h2>
+                    <div class="dataset-header">
+                        <h2>Patient Input</h2>
+                        <div class="dataset-selector-container">
+                            <label for="dataset-selector">Dataset:</label>
+                            <select id="dataset-selector">
+                                <option value="diabetes">Diabetes Risk Assessment</option>
+                                <option value="hcv">HCV Classification</option>
+                                <option value="dermatology">Dermatology Diagnosis</option>
+                            </select>
+                        </div>
+                    </div>
+                    
                     <form id="prediction-form">
-                        <div class="input-row">
-                            <div class="input-group">
-                                <label for="age">Age: <span id="age-val">45</span></label>
-                                <input type="range" id="age" name="Age" min="1" max="100" value="45">
+                        
+                        <!-- DIABETES FORM -->
+                        <div id="form-diabetes" class="dataset-form">
+                            <div class="input-row">
+                                <div class="input-group">
+                                    <label for="age-diab">Age: <span id="age-val-diab">45</span></label>
+                                    <input type="range" id="age-diab" name="Age" min="1" max="100" value="45">
+                                </div>
+                                <div class="input-group">
+                                    <label for="gender">Gender</label>
+                                    <select id="gender" name="Gender">
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div class="input-group">
-                                <label for="gender">Gender</label>
-                                <select id="gender" name="Gender">
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                </select>
+                            <div class="checkbox-grid">
+                                <label class="checkbox-container"><input type="checkbox" name="Polyuria"> <span>Polyuria</span></label>
+                                <label class="checkbox-container"><input type="checkbox" name="Polydipsia"> <span>Polydipsia</span></label>
+                                <label class="checkbox-container"><input type="checkbox" name="sudden weight loss"> <span>Sudden weight loss</span></label>
+                                <label class="checkbox-container"><input type="checkbox" name="weakness"> <span>Weakness</span></label>
+                                <label class="checkbox-container"><input type="checkbox" name="Polyphagia"> <span>Polyphagia</span></label>
+                                <label class="checkbox-container"><input type="checkbox" name="Genital thrush"> <span>Genital thrush</span></label>
+                                <label class="checkbox-container"><input type="checkbox" name="visual blurring"> <span>Visual blurring</span></label>
+                                <label class="checkbox-container"><input type="checkbox" name="Itching"> <span>Itching</span></label>
+                                <label class="checkbox-container"><input type="checkbox" name="Irritability"> <span>Irritability</span></label>
+                                <label class="checkbox-container"><input type="checkbox" name="delayed healing"> <span>Delayed healing</span></label>
+                                <label class="checkbox-container"><input type="checkbox" name="partial paresis"> <span>Partial paresis</span></label>
+                                <label class="checkbox-container"><input type="checkbox" name="muscle stiffness"> <span>Muscle stiffness</span></label>
+                                <label class="checkbox-container"><input type="checkbox" name="Alopecia"> <span>Alopecia</span></label>
+                                <label class="checkbox-container"><input type="checkbox" name="Obesity"> <span>Obesity</span></label>
                             </div>
                         </div>
 
-                        <div class="checkbox-grid">
-                            <label class="checkbox-container"><input type="checkbox" name="Polyuria"> <span>Polyuria</span></label>
-                            <label class="checkbox-container"><input type="checkbox" name="Polydipsia"> <span>Polydipsia</span></label>
-                            <label class="checkbox-container"><input type="checkbox" name="sudden weight loss"> <span>Sudden weight loss</span></label>
-                            <label class="checkbox-container"><input type="checkbox" name="weakness"> <span>Weakness</span></label>
-                            <label class="checkbox-container"><input type="checkbox" name="Polyphagia"> <span>Polyphagia</span></label>
-                            <label class="checkbox-container"><input type="checkbox" name="Genital thrush"> <span>Genital thrush</span></label>
-                            <label class="checkbox-container"><input type="checkbox" name="visual blurring"> <span>Visual blurring</span></label>
-                            <label class="checkbox-container"><input type="checkbox" name="Itching"> <span>Itching</span></label>
-                            <label class="checkbox-container"><input type="checkbox" name="Irritability"> <span>Irritability</span></label>
-                            <label class="checkbox-container"><input type="checkbox" name="delayed healing"> <span>Delayed healing</span></label>
-                            <label class="checkbox-container"><input type="checkbox" name="partial paresis"> <span>Partial paresis</span></label>
-                            <label class="checkbox-container"><input type="checkbox" name="muscle stiffness"> <span>Muscle stiffness</span></label>
-                            <label class="checkbox-container"><input type="checkbox" name="Alopecia"> <span>Alopecia</span></label>
-                            <label class="checkbox-container"><input type="checkbox" name="Obesity"> <span>Obesity</span></label>
+                        <!-- HCV FORM -->
+                        <div id="form-hcv" class="dataset-form hidden">
+                            <div class="input-row">
+                                <div class="input-group">
+                                    <label for="age-hcv">Age: <span id="age-val-hcv">45</span></label>
+                                    <input type="range" id="age-hcv" name="Age" min="1" max="100" value="45">
+                                </div>
+                                <div class="input-group">
+                                    <label for="sex-hcv">Sex</label>
+                                    <select id="sex-hcv" name="Sex">
+                                        <option value="m">Male</option>
+                                        <option value="f">Female</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="number-grid">
+                                <div class="input-group"><label>ALB (g/L)</label><input type="number" step="0.1" name="ALB" value="40.0"></div>
+                                <div class="input-group"><label>ALP (IU/L)</label><input type="number" step="0.1" name="ALP" value="70.0"></div>
+                                <div class="input-group"><label>ALT (IU/L)</label><input type="number" step="0.1" name="ALT" value="25.0"></div>
+                                <div class="input-group"><label>AST (IU/L)</label><input type="number" step="0.1" name="AST" value="25.0"></div>
+                                <div class="input-group"><label>BIL (µmol/L)</label><input type="number" step="0.1" name="BIL" value="10.0"></div>
+                                <div class="input-group"><label>CHE (kU/L)</label><input type="number" step="0.1" name="CHE" value="8.0"></div>
+                                <div class="input-group"><label>CHOL (mmol/L)</label><input type="number" step="0.1" name="CHOL" value="5.0"></div>
+                                <div class="input-group"><label>CREA (µmol/L)</label><input type="number" step="0.1" name="CREA" value="80.0"></div>
+                                <div class="input-group"><label>GGT (IU/L)</label><input type="number" step="0.1" name="GGT" value="30.0"></div>
+                                <div class="input-group"><label>PROT (g/L)</label><input type="number" step="0.1" name="PROT" value="70.0"></div>
+                            </div>
+                        </div>
+
+                        <!-- DERMATOLOGY FORM -->
+                        <div id="form-dermatology" class="dataset-form hidden">
+                            <div class="input-row">
+                                <div class="input-group">
+                                    <label for="age-derm">Age: <span id="age-val-derm">45</span></label>
+                                    <input type="range" id="age-derm" name="Age" min="1" max="100" value="45">
+                                </div>
+                                <div class="input-group">
+                                    <label for="f11-derm">Family History</label>
+                                    <select id="f11-derm" name="F11">
+                                        <option value="0">No (0)</option>
+                                        <option value="1">Yes (1)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="scrollable-form">
+                                <h4>Clinical Features (0-3)</h4>
+                                <div class="number-grid">
+                                    <div class="input-group"><label>Erythema</label><input type="number" min="0" max="3" name="F1" value="0"></div>
+                                    <div class="input-group"><label>Scaling</label><input type="number" min="0" max="3" name="F2" value="0"></div>
+                                    <div class="input-group"><label>Definite Borders</label><input type="number" min="0" max="3" name="F3" value="0"></div>
+                                    <div class="input-group"><label>Itching</label><input type="number" min="0" max="3" name="F4" value="0"></div>
+                                    <div class="input-group"><label>Koebner Phenom.</label><input type="number" min="0" max="3" name="F5" value="0"></div>
+                                    <div class="input-group"><label>Polygonal Papules</label><input type="number" min="0" max="3" name="F6" value="0"></div>
+                                    <div class="input-group"><label>Follicular Papules</label><input type="number" min="0" max="3" name="F7" value="0"></div>
+                                    <div class="input-group"><label>Oral Mucosal Inv.</label><input type="number" min="0" max="3" name="F8" value="0"></div>
+                                    <div class="input-group"><label>Knee/Elbow Inv.</label><input type="number" min="0" max="3" name="F9" value="0"></div>
+                                    <div class="input-group"><label>Scalp Involv.</label><input type="number" min="0" max="3" name="F10" value="0"></div>
+                                </div>
+                                <h4>Histopathological Features (0-3)</h4>
+                                <div class="number-grid">
+                                    <div class="input-group"><label>Melanin Incont.</label><input type="number" min="0" max="3" name="F12" value="0"></div>
+                                    <div class="input-group"><label>Eosinophils</label><input type="number" min="0" max="3" name="F13" value="0"></div>
+                                    <div class="input-group"><label>PNL Infiltrate</label><input type="number" min="0" max="3" name="F14" value="0"></div>
+                                    <div class="input-group"><label>Fibrosis Pap. Der.</label><input type="number" min="0" max="3" name="F15" value="0"></div>
+                                    <div class="input-group"><label>Exocytosis</label><input type="number" min="0" max="3" name="F16" value="0"></div>
+                                    <div class="input-group"><label>Acanthosis</label><input type="number" min="0" max="3" name="F17" value="0"></div>
+                                    <div class="input-group"><label>Hyperkeratosis</label><input type="number" min="0" max="3" name="F18" value="0"></div>
+                                    <div class="input-group"><label>Parakeratosis</label><input type="number" min="0" max="3" name="F19" value="0"></div>
+                                    <div class="input-group"><label>Clubbing Rete</label><input type="number" min="0" max="3" name="F20" value="0"></div>
+                                    <div class="input-group"><label>Elongation Rete</label><input type="number" min="0" max="3" name="F21" value="0"></div>
+                                    <div class="input-group"><label>Thin Suprapap.</label><input type="number" min="0" max="3" name="F22" value="0"></div>
+                                    <div class="input-group"><label>Spongiform Pus.</label><input type="number" min="0" max="3" name="F23" value="0"></div>
+                                    <div class="input-group"><label>Munro Microab.</label><input type="number" min="0" max="3" name="F24" value="0"></div>
+                                    <div class="input-group"><label>Focal Hypergran.</label><input type="number" min="0" max="3" name="F25" value="0"></div>
+                                    <div class="input-group"><label>Disapp. Granular</label><input type="number" min="0" max="3" name="F26" value="0"></div>
+                                    <div class="input-group"><label>Vacuolisation</label><input type="number" min="0" max="3" name="F27" value="0"></div>
+                                    <div class="input-group"><label>Spongiosis</label><input type="number" min="0" max="3" name="F28" value="0"></div>
+                                    <div class="input-group"><label>Saw-tooth Retes</label><input type="number" min="0" max="3" name="F29" value="0"></div>
+                                    <div class="input-group"><label>Follicular Horn</label><input type="number" min="0" max="3" name="F30" value="0"></div>
+                                    <div class="input-group"><label>Perifollicular</label><input type="number" min="0" max="3" name="F31" value="0"></div>
+                                    <div class="input-group"><label>Monoluclear Inf.</label><input type="number" min="0" max="3" name="F32" value="0"></div>
+                                    <div class="input-group"><label>Band-like Infil.</label><input type="number" min="0" max="3" name="F33" value="0"></div>
+                                </div>
+                            </div>
                         </div>
                         
                         <button type="submit" class="btn-primary" id="run-btn">
@@ -95,7 +195,7 @@
             <!-- Review Area -->
             <section class="bottom-section">
                 <div class="glass-panel panel-review">
-                    <h2>Model Performance — For Review</h2>
+                    <h2>Model Performance — <span id="metrics-dataset-title" style="text-transform: capitalize;">Diabetes</span> Dataset</h2>
                     
                     <div class="metrics-cards" id="metrics-cards">
                         <!-- Populated dynamically -->
@@ -134,6 +234,6 @@
             </section>
         </main>
     </div>
-    <script src="script.js"></script>
+    <script src="script.js?v=2"></script>
 </body>
 </html>

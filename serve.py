@@ -1,11 +1,14 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from predict import predict_new_patient
-from evaluate import get_evaluation_metrics
+from typing import Optional
 import os
-app = FastAPI(title="GAT+RDBN Diabetes Prediction API")
+
+from predict import predict_patient
+from evaluate import get_evaluation_metrics
+
+app = FastAPI(title="GAT+RDBN Multi-Dataset Prediction API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -14,7 +17,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-class PatientData(BaseModel):
+
+class DiabetesPatientData(BaseModel):
     Age: float
     Gender: str
     Polyuria: str
@@ -32,8 +36,58 @@ class PatientData(BaseModel):
     Alopecia: str
     Obesity: str
 
-@app.post("/predict")
-def predict(patient: PatientData):
+class HCVPatientData(BaseModel):
+    Age: float
+    Sex: str
+    ALB: float
+    ALP: float
+    ALT: float
+    AST: float
+    BIL: float
+    CHE: float
+    CHOL: float
+    CREA: float
+    GGT: float
+    PROT: float
+
+class DermatologyPatientData(BaseModel):
+    F1: float
+    F2: float
+    F3: float
+    F4: float
+    F5: float
+    F6: float
+    F7: float
+    F8: float
+    F9: float
+    F10: float
+    F11: float
+    F12: float
+    F13: float
+    F14: float
+    F15: float
+    F16: float
+    F17: float
+    F18: float
+    F19: float
+    F20: float
+    F21: float
+    F22: float
+    F23: float
+    F24: float
+    F25: float
+    F26: float
+    F27: float
+    F28: float
+    F29: float
+    F30: float
+    F31: float
+    F32: float
+    F33: float
+    Age: float
+
+@app.post("/predict/diabetes")
+def predict_diabetes(patient: DiabetesPatientData):
     data_dict = patient.model_dump()
     mapped_dict = {
         "Age": data_dict["Age"],
@@ -53,13 +107,19 @@ def predict(patient: PatientData):
         "Alopecia": data_dict["Alopecia"],
         "Obesity": data_dict["Obesity"]
     }
-    
-    result = predict_new_patient(mapped_dict)
-    return result
+    return predict_patient(mapped_dict, dataset_name="diabetes")
+
+@app.post("/predict/hcv")
+def predict_hcv(patient: HCVPatientData):
+    return predict_patient(patient.model_dump(), dataset_name="hcv")
+
+@app.post("/predict/dermatology")
+def predict_dermatology(patient: DermatologyPatientData):
+    return predict_patient(patient.model_dump(), dataset_name="dermatology")
 
 @app.get("/metrics")
-def metrics():
-    return get_evaluation_metrics()
+def metrics(dataset: str = Query("diabetes")):
+    return get_evaluation_metrics(dataset_name=dataset)
 
 if not os.path.exists("frontend"):
     os.makedirs("frontend")

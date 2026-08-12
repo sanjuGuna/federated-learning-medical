@@ -1,14 +1,45 @@
 document.addEventListener('DOMContentLoaded', () => {
     
-    // Update age display
-    const ageInput = document.getElementById('age');
-    const ageVal = document.getElementById('age-val');
-    ageInput.addEventListener('input', (e) => {
-        ageVal.textContent = e.target.value;
+    // Dataset Switching Logic
+    const datasetSelector = document.getElementById('dataset-selector');
+    const forms = document.querySelectorAll('.dataset-form');
+    const metricsTitle = document.getElementById('metrics-dataset-title');
+
+    datasetSelector.addEventListener('change', (e) => {
+        const selected = e.target.value;
+        
+        // Hide all forms, show selected
+        forms.forEach(f => f.classList.add('hidden'));
+        document.getElementById(`form-${selected}`).classList.remove('hidden');
+        
+        // Update metrics title
+        metricsTitle.textContent = selected;
+        
+        // Fetch metrics for selected dataset
+        fetchMetrics(selected);
+        
+        // Reset prediction UI
+        resetPredictionUI();
     });
 
-    // Fetch and display metrics on load
-    fetchMetrics();
+    // Update age displays
+    const ageInputs = [
+        {input: 'age-diab', val: 'age-val-diab'},
+        {input: 'age-hcv', val: 'age-val-hcv'},
+        {input: 'age-derm', val: 'age-val-derm'}
+    ];
+    
+    ageInputs.forEach(item => {
+        const el = document.getElementById(item.input);
+        if (el) {
+            el.addEventListener('input', (e) => {
+                document.getElementById(item.val).textContent = e.target.value;
+            });
+        }
+    });
+
+    // Fetch and display metrics on load for default dataset (diabetes)
+    fetchMetrics('diabetes');
 
     // Handle form submission
     const form = document.getElementById('prediction-form');
@@ -25,30 +56,58 @@ document.addEventListener('DOMContentLoaded', () => {
         runBtn.disabled = true;
 
         try {
-            // Serialize form data
+            const selectedDataset = datasetSelector.value;
             const formData = new FormData(form);
+            let payload = {};
             
-            // Build payload exactly as backend expects
-            const payload = {
-                Age: parseFloat(formData.get('Age')),
-                Gender: formData.get('Gender'),
-                Polyuria: formData.get('Polyuria') ? "Yes" : "No",
-                Polydipsia: formData.get('Polydipsia') ? "Yes" : "No",
-                sudden_weight_loss: formData.get('sudden weight loss') ? "Yes" : "No",
-                weakness: formData.get('weakness') ? "Yes" : "No",
-                Polyphagia: formData.get('Polyphagia') ? "Yes" : "No",
-                Genital_thrush: formData.get('Genital thrush') ? "Yes" : "No",
-                visual_blurring: formData.get('visual blurring') ? "Yes" : "No",
-                Itching: formData.get('Itching') ? "Yes" : "No",
-                Irritability: formData.get('Irritability') ? "Yes" : "No",
-                delayed_healing: formData.get('delayed healing') ? "Yes" : "No",
-                partial_paresis: formData.get('partial paresis') ? "Yes" : "No",
-                muscle_stiffness: formData.get('muscle stiffness') ? "Yes" : "No",
-                Alopecia: formData.get('Alopecia') ? "Yes" : "No",
-                Obesity: formData.get('Obesity') ? "Yes" : "No"
-            };
+            // Build payload exactly as backend expects based on dataset
+            if (selectedDataset === 'diabetes') {
+                payload = {
+                    Age: parseFloat(document.getElementById('age-diab').value),
+                    Gender: formData.get('Gender'),
+                    Polyuria: formData.getAll('Polyuria').length ? "Yes" : "No",
+                    Polydipsia: formData.getAll('Polydipsia').length ? "Yes" : "No",
+                    sudden_weight_loss: formData.getAll('sudden weight loss').length ? "Yes" : "No",
+                    weakness: formData.getAll('weakness').length ? "Yes" : "No",
+                    Polyphagia: formData.getAll('Polyphagia').length ? "Yes" : "No",
+                    Genital_thrush: formData.getAll('Genital thrush').length ? "Yes" : "No",
+                    visual_blurring: formData.getAll('visual blurring').length ? "Yes" : "No",
+                    Itching: formData.getAll('Itching').length ? "Yes" : "No",
+                    Irritability: formData.getAll('Irritability').length ? "Yes" : "No",
+                    delayed_healing: formData.getAll('delayed healing').length ? "Yes" : "No",
+                    partial_paresis: formData.getAll('partial paresis').length ? "Yes" : "No",
+                    muscle_stiffness: formData.getAll('muscle stiffness').length ? "Yes" : "No",
+                    Alopecia: formData.getAll('Alopecia').length ? "Yes" : "No",
+                    Obesity: formData.getAll('Obesity').length ? "Yes" : "No"
+                };
+            } else if (selectedDataset === 'hcv') {
+                payload = {
+                    Age: parseFloat(document.getElementById('age-hcv').value),
+                    Sex: formData.get('Sex'),
+                    ALB: parseFloat(formData.get('ALB')),
+                    ALP: parseFloat(formData.get('ALP')),
+                    ALT: parseFloat(formData.get('ALT')),
+                    AST: parseFloat(formData.get('AST')),
+                    BIL: parseFloat(formData.get('BIL')),
+                    CHE: parseFloat(formData.get('CHE')),
+                    CHOL: parseFloat(formData.get('CHOL')),
+                    CREA: parseFloat(formData.get('CREA')),
+                    GGT: parseFloat(formData.get('GGT')),
+                    PROT: parseFloat(formData.get('PROT'))
+                };
+            } else if (selectedDataset === 'dermatology') {
+                payload = {
+                    Age: parseFloat(document.getElementById('age-derm').value),
+                    F11: parseFloat(formData.get('F11'))
+                };
+                for (let i = 1; i <= 33; i++) {
+                    if (i !== 11) {
+                        payload[`F${i}`] = parseFloat(formData.get(`F${i}`));
+                    }
+                }
+            }
 
-            const response = await fetch('/predict', {
+            const response = await fetch(`/predict/${selectedDataset}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -76,6 +135,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
+function resetPredictionUI() {
+    document.getElementById('pred-class').textContent = '--';
+    document.getElementById('pred-conf').textContent = '--% confidence';
+    const predBar = document.getElementById('pred-bar');
+    predBar.style.width = '0%';
+    predBar.className = 'progress-bar';
+    document.getElementById('neighbors-list').innerHTML = '<p class="placeholder-text">Run diagnosis to see similar patients</p>';
+}
+
 function updatePredictionUI(data) {
     // 1. Update Prediction Bar
     const predClass = document.getElementById('pred-class');
@@ -89,12 +157,16 @@ function updatePredictionUI(data) {
     predClass.className = '';
     predBar.className = 'progress-bar';
 
+    // Highlight generic positive/negative or use generic accent
     if (data.prediction === 'Positive') {
         predClass.classList.add('positive-pred');
         predBar.classList.add('positive-bar');
-    } else {
+    } else if (data.prediction === 'Negative') {
         predClass.classList.add('negative-pred');
         predBar.classList.add('negative-bar');
+    } else {
+        // Multi-class neutral highlighting
+        predClass.style.color = 'var(--text-primary)';
     }
 
     // Trigger reflow for animation
@@ -119,20 +191,23 @@ function updatePredictionUI(data) {
             neighborsList.appendChild(tag);
         });
     }
-
-
 }
 
-async function fetchMetrics() {
+async function fetchMetrics(dataset) {
+    const cardsContainer = document.getElementById('metrics-cards');
+    cardsContainer.innerHTML = '<div class="loading-metrics">Loading metrics...</div>';
+    
     try {
-        const response = await fetch('/metrics');
+        const response = await fetch(`/metrics?dataset=${dataset}`);
         if (!response.ok) return;
         const data = await response.json();
         
         // Populate Ablation Table
+        const tbody = document.getElementById('ablation-body');
+        tbody.innerHTML = '';
+        document.getElementById('best-model-banner').classList.add('hidden');
+        
         if (data.ablation && data.ablation.length > 0) {
-            const tbody = document.getElementById('ablation-body');
-            tbody.innerHTML = '';
             
             let hybridMetrics = null;
             let bestModel = null;
@@ -163,36 +238,38 @@ async function fetchMetrics() {
                 document.getElementById('best-model-banner').classList.remove('hidden');
             }
 
-            // Populate Metric Cards (using HYBRID metrics)
-            if (hybridMetrics) {
-                const cardsContainer = document.getElementById('metrics-cards');
+            // Populate Metric Cards (using HYBRID metrics or Best model metrics)
+            const displayMetrics = hybridMetrics || bestModel;
+            if (displayMetrics) {
                 cardsContainer.innerHTML = `
                     <div class="metric-card">
-                        <div class="metric-val">${hybridMetrics.Accuracy}%</div>
+                        <div class="metric-val">${displayMetrics.Accuracy}%</div>
                         <div class="metric-label">Accuracy</div>
                     </div>
                     <div class="metric-card">
-                        <div class="metric-val">${hybridMetrics.Precision}%</div>
+                        <div class="metric-val">${displayMetrics.Precision}%</div>
                         <div class="metric-label">Precision</div>
                     </div>
                     <div class="metric-card">
-                        <div class="metric-val">${hybridMetrics.Recall}%</div>
+                        <div class="metric-val">${displayMetrics.Recall}%</div>
                         <div class="metric-label">Recall</div>
                     </div>
                     <div class="metric-card">
-                        <div class="metric-val">${hybridMetrics['F1-Score']}%</div>
+                        <div class="metric-val">${displayMetrics['F1-Score']}%</div>
                         <div class="metric-label">F1-Score</div>
                     </div>
                     <div class="metric-card">
-                        <div class="metric-val">${hybridMetrics['ROC-AUC']}</div>
+                        <div class="metric-val">${displayMetrics['ROC-AUC']}</div>
                         <div class="metric-label">ROC-AUC</div>
                     </div>
                 `;
             }
+        } else {
+            cardsContainer.innerHTML = '<div class="placeholder-text">No metrics found.</div>';
         }
 
     } catch (e) {
         console.error("Failed to fetch metrics", e);
-        document.getElementById('metrics-cards').innerHTML = '<div class="placeholder-text">Failed to load metrics. Ensure backend models are trained.</div>';
+        cardsContainer.innerHTML = '<div class="placeholder-text">Failed to load metrics. Ensure backend models are trained.</div>';
     }
 }
