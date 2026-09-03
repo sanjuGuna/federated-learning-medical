@@ -1,0 +1,173 @@
+--- HCV Dataset Preprocessing ---
+Number of samples before preprocessing: 615
+Missing values before preprocessing: 31
+Missing values after preprocessing: 0
+Number of classes: 5
+Class distribution:
+Category
+0    533
+1      7
+2     24
+3     21
+4     30
+Name: count, dtype: int64
+--- Dermatology Dataset Preprocessing ---
+Number of samples before preprocessing: 366
+Missing values before preprocessing: 8
+Missing values after preprocessing: 0
+Number of classes: 6
+Class distribution:
+class
+0    112
+1     61
+2     72
+3     49
+4     52
+5     20
+Name: count, dtype: int64
+{
+  "diabetes": {
+    "Class_0": {
+      "Age": 40,
+      "Gender": "Male",
+      "Polyuria": "No",
+      "Polydipsia": "Yes",
+      "sudden weight loss": "No",
+      "weakness": "Yes",
+      "Polyphagia": "No",
+      "Genital thrush": "No",
+      "visual blurring": "No",
+      "Itching": "Yes",
+      "Irritability": "No",
+      "delayed healing": "Yes",
+      "partial paresis": "No",
+      "muscle stiffness": "Yes",
+      "Alopecia": "Yes",
+      "Obesity": "Yes"
+    },
+    "Class_1": {
+      "Age": 58,
+      "Gender": "Male",
+      "Polyuria": "No",
+      "Polydipsia": "No",
+      "sudden weight loss": "No",
+      "weakness": "Yes",
+      "Polyphagia": "No",
+      "Genital thrush": "No",
+      "visual blurring": "Yes",
+      "Itching": "No",
+      "Irritability": "No",
+      "delayed healing": "No",
+      "partial paresis": "Yes",
+      "muscle stiffness": "No",
+      "Alopecia": "Yes",
+      "Obesity": "No"
+    }
+  },
+  "hcv": {
+    "Class_0": {
+      "Unnamed: 0": 1,
+      "Age": 32,
+      "Sex": "m",
+      "ALB": 38.5,
+      "ALP": 52.5,
+      "ALT": 7.7,
+      "AST": 22.1,
+      "BIL": 7.5,
+      "CHE": 6.93,
+      "CHOL": 3.23,
+      "CREA": 106.0,
+      "GGT": 12.1,
+      "PROT": 69.0
+    },
+    "Class_3": {
+      "Unnamed: 0": 558,
+      "Age": 51,
+      "Sex": "m",
+      "ALB": 43.0,
+      "ALP": 37.2,
+      "ALT": 21.4,
+      "AST": 132.8,
+      "BIL": 5.0,
+      "CHE": 10.12,
+      "CHOL": 5.23,
+      "CREA": 76.2,
+      "GGT": 76.4,
+      "PROT": 76.7
+    }
+  },
+  "dermatology": {
+    "Class_0": {
+      "F1": "3",
+      "F2": "3",
+      "F3": "3",
+      "F4": "2",
+      "F5": "1",
+      "F6": "0",
+      "F7": "0",
+      "F8": "0",
+      "F9": "1",
+      "F10": "1",
+      "F11": "1",
+      "F12": "0",
+      "F13": "0",
+      "F14": "1",
+      "F15": "0",
+      "F16": "1",
+      "F17": "2",
+      "F18": "0",
+      "F19": "2",
+      "F20": "2",
+      "F21": "2",
+      "F22": "2",
+      "F23": "2",
+      "F24": "1",
+      "F25": "0",
+      "F26": "0",
+      "F27": "0",
+      "F28": "0",
+      "F29": "0",
+      "F30": "0",
+      "F31": "0",
+      "F32": "1",
+      "F33": "0",
+      "Age": "8"
+    },
+    "Class_1": {
+      "F1": "2",
+      "F2": "2",
+      "F3": "0",
+      "F4": "3",
+      "F5": "0",
+      "F6": "0",
+      "F7": "0",
+      "F8": "0",
+      "F9": "1",
+      "F10": "0",
+      "F11": "0",
+      "F12": "0",
+      "F13": "0",
+      "F14": "0",
+      "F15": "0",
+      "F16": "3",
+      "F17": "2",
+      "F18": "0",
+      "F19": "0",
+      "F20": "0",
+      "F21": "0",
+      "F22": "0",
+      "F23": "0",
+      "F24": "0",
+      "F25": "0",
+      "F26": "0",
+      "F27": "0",
+      "F28": "3",
+      "F29": "0",
+      "F30": "0",
+      "F31": "0",
+      "F32": "1",
+      "F33": "0",
+      "Age": "55"
+    }
+  }
+}

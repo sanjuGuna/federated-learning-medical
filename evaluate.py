@@ -31,29 +31,37 @@ def get_evaluation_metrics(dataset_name='diabetes'):
     in_channels = X.shape[1]
     num_classes = len(np.unique(y))
     
-    modes = ['gat', 'rdbn', 'hybrid']
+    modes = ['gat', 'rdbn', 'hybrid', 'federated']
     
     results = []
     hybrid_cm = None
     
     for mode in modes:
-        model_path = f"saved_models/{dataset_name}/{mode}.pth"
-        if not os.path.exists(model_path):
-            # Fallback for diabetes old structure
-            if dataset_name == 'diabetes':
-                alt_paths = {'gat': 'saved_models/gat_only.pth', 'rdbn': 'saved_models/rdbn_only.pth', 'hybrid': 'saved_models/hybrid.pth'}
-                model_path = alt_paths[mode]
-                if not os.path.exists(model_path):
+        if mode == 'federated':
+            model_path = f"federated_models/{dataset_name}/best_global_model.pt"
+            eval_mode = 'gat'
+        else:
+            model_path = f"saved_models/{dataset_name}/{mode}.pth"
+            eval_mode = mode
+            if not os.path.exists(model_path):
+                # Fallback for diabetes old structure
+                if dataset_name == 'diabetes':
+                    alt_paths = {'gat': 'saved_models/gat_only.pth', 'rdbn': 'saved_models/rdbn_only.pth', 'hybrid': 'saved_models/hybrid.pth'}
+                    model_path = alt_paths.get(mode, "")
+                    if not os.path.exists(model_path):
+                        continue
+                else:
                     continue
-            else:
-                continue
                 
-        model = HybridClassifier(in_channels=in_channels, num_classes=num_classes, mode=mode)
+        if not os.path.exists(model_path):
+            continue
+                
+        model = HybridClassifier(in_channels=in_channels, num_classes=num_classes, mode=eval_mode)
         model.load_state_dict(torch.load(model_path))
         model.eval()
             
         with torch.no_grad():
-            if mode in ['gat', 'hybrid']:
+            if eval_mode in ['gat', 'hybrid']:
                 out, explain = model(data.x, data.edge_index, return_explainability=True)
             else:
                 out, explain = model(data.x, return_explainability=True)

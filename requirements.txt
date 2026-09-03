@@ -1,7 +1,14 @@
-pandas
-scikit-learn
 torch
-torch_geometric
+torch-geometric
+pandas
+numpy
+scikit-learn
+scipy
 networkx
 matplotlib
 seaborn
+fastapi
+uvicorn
+pydantic
+requests
+tqdm

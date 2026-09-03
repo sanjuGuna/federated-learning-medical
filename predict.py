@@ -103,11 +103,15 @@ def predict_patient(patient_data_dict, dataset_name="diabetes"):
     in_channels = X_combined.shape[1]
     num_classes = len(np.unique(y_orig))
     
-    model_path = f"saved_models/{dataset_name}/hybrid.pth"
-    if not os.path.exists(model_path) and dataset_name == 'diabetes':
-        model_path = "saved_models/hybrid.pth"
-        
-    model = HybridClassifier(in_channels=in_channels, num_classes=num_classes, mode='hybrid')
+    # Use Federated model if available, else fallback to centralized hybrid model
+    model_path = f"federated_models/{dataset_name}/best_global_model.pt"
+    if os.path.exists(model_path):
+        model = HybridClassifier(in_channels=in_channels, num_classes=num_classes, mode='gat')
+    else:
+        model_path = f"saved_models/{dataset_name}/hybrid.pth"
+        if not os.path.exists(model_path) and dataset_name == 'diabetes':
+            model_path = "saved_models/hybrid.pth"
+        model = HybridClassifier(in_channels=in_channels, num_classes=num_classes, mode='hybrid')
     model.load_state_dict(torch.load(model_path))
     model.eval()
     

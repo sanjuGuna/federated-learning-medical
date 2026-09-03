@@ -1,5 +1,23 @@
-__pycache__
-.venv
-saved_models
-arhive
-plots
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDE & OS files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Plot outputs & temporary logs
+plots/
+*.log
